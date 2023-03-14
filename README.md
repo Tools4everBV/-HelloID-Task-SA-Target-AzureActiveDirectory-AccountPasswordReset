@@ -30,3 +30,5 @@ This code snippet executes the following tasks:
 2. Receive a bearer token by making a POST request to: `https://login.microsoftonline.com/$AADTenantID/oauth2/token`, where `$AADTenantID` is the ID of your Azure Active Directory tenant.
 
 3. Looks up the user in Azure by its UPN, by making a GET request to  `https://graph.microsoft.com/v1.0/users/$($formObject.userPrincipalName)`.  This is done to get the Objectid of the user in Azure.
+
+4. Resets the password of the user.
