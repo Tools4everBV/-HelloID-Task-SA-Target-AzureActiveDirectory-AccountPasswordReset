@@ -2,12 +2,12 @@
 ########################################################################
 # Form mapping
 $formObject = @{
-    userPrincipalName             = $form.UserPrincipalName
+    UserIdentity                  = $form.UserIdentity
     password                      = $form.password
     forceChangePasswordNextSignIn = [bool] $form.ChangePasswordAtNextLogon
 }
 try {
-    Write-Information "Executing AzureActiveDirectory action: [AccountPasswordReset] for: [$($formObject.userPrincipalName)]"
+    Write-Information "Executing AzureActiveDirectory action: [AccountPasswordReset] for: [$($formObject.UserIdentity)]"
 
     # Action logic here
     Write-Information "Retrieving Microsoft Graph AccessToken for tenant: [$AADTenantID]"
@@ -26,7 +26,7 @@ try {
 
     $accessToken = (Invoke-RestMethod @splatTokenParams).access_token
     $splatGetUserParams = @{
-        Uri     = "https://graph.microsoft.com/v1.0/users/$($formObject.userPrincipalName)"
+        Uri     = "https://graph.microsoft.com/v1.0/users/$($formObject.UserIdentity)"
         Method  = 'GET'
         Verbose = $false
         Headers = @{
@@ -36,14 +36,13 @@ try {
         }
     }
     $azureADUser = Invoke-RestMethod @splatGetUserParams
-}
-catch {
-    Write-Error "Could not execute AzureActiveDirectory action [AccountPasswordReset] for: [$($formObject.userPrincipalName)]. User not found in the directory. Error: [$($_.Exception.Message)], Details : [$($_.Exception.ErrorDetails)]"
+} catch {
+    Write-Error "Could not execute AzureActiveDirectory action [AccountPasswordReset] for: [$($formObject.UserIdentity)]. User not found in the directory. Error: [$($_.Exception.Message)], Details : [$($_.Exception.ErrorDetails)]"
     return
 }
 
 try {
-    Write-Information "Executing AzureActiveDirectory action: [AccountPasswordReset] for: [$($formObject.userPrincipalName)]"
+    Write-Information "Executing AzureActiveDirectory action: [AccountPasswordReset] for: [$($formObject.UserIdentity)]"
 
 
     $splatResetPasswordParams = @{
@@ -66,29 +65,27 @@ try {
 
     $null = Invoke-RestMethod @splatResetPasswordParams
 
-
     $auditLog = @{
         Action            = 'SetPassword'
         System            = 'AzureActiveDirectory'
         TargetIdentifier  = "$($azureADUser.id)"
-        TargetDisplayName = "$($formObject.userPrincipalName)"
-        Message           = "AzureActiveDirectory action: [AccountPasswordReset] for: [$($formObject.userPrincipalName)] executed successfully"
+        TargetDisplayName = "$($formObject.UserIdentity)"
+        Message           = "AzureActiveDirectory action: [AccountPasswordReset] for: [$($formObject.UserIdentity)] executed successfully"
         IsError           = $false
     }
     Write-Information -Tags 'Audit' -MessageData $auditLog
-    Write-Information "AzureActiveDirectory action: [AccountPasswordReset] for: [$($formObject.userPrincipalName)] executed successfully"
-}
-catch {
+    Write-Information "AzureActiveDirectory action: [AccountPasswordReset] for: [$($formObject.UserIdentity)] executed successfully"
+} catch {
     $ex = $_
     $auditLog = @{
         Action            = 'SetPassword'
         System            = 'AzureActiveDirectory'
         TargetIdentifier  = "$($azureADUser.id)"
-        TargetDisplayName = "$($formObject.userPrincipalName)"
-        Message           = "Could not execute AzureActiveDirectory action: [AccountPasswordReset] for: [$($formObject.userPrincipalName)], error: $($ex.Exception.Message) details : [$($ex.ErrorDetails.message)]"
+        TargetDisplayName = "$($formObject.UserIdentity)"
+        Message           = "Could not execute AzureActiveDirectory action: [AccountPasswordReset] for: [$($formObject.UserIdentity)], error: $($ex.Exception.Message) details : [$($ex.ErrorDetails.message)]"
         IsError           = $true
     }
     Write-Information -Tags "Audit" -MessageData $auditLog
-    Write-Error "Could not execute AzureActiveDirectory action: [AccountPasswordReset] for: [$($formObject.userPrincipalName)], error: $($ex.Exception.Message) details : [$($ex.ErrorDetails.message)])"
+    Write-Error "Could not execute AzureActiveDirectory action: [AccountPasswordReset] for: [$($formObject.UserIdentity)], error: $($ex.Exception.Message) details : [$($ex.ErrorDetails.message)])"
 }
 ########################################################################

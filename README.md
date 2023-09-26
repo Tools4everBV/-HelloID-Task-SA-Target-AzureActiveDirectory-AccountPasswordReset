@@ -13,22 +13,23 @@ Before using this snippet, verify you've met with the following requirements:
 
 This code snippet executes the following tasks:
 
-1. Define a hash table `$formObject`. The keys of the hash table represent the properties of the `` cmdlet, while the values represent the values entered in the form.
+1. Define a hash table `$formObject`. The keys of the hash table represent the properties of the [User Update WebRequest](https://learn.microsoft.com/en-us/graph/api/user-update?view=graph-rest-1.0&tabs=http#response-2), while the values represent the values entered in the form.
 
 > To view an example of the form output, please refer to the JSON code pasted below.
 
 ```json
 {
-   "UserPrincipalName": "testuser@mydomain.local",
+   "UserIdentity": "testuser@mydomain.local",
    "password" : "mySecretpassword191287436235^",
    "ChangePasswordAtNextLogon" : true
 }
 ```
 
 > :exclamation: It is important to note that the names of your form fields might differ. Ensure that the `$formObject` hashtable is appropriately adjusted to match your form fields.
+> The **UserIdentity** can hold different values [See the Microsoft Docs page](https://learn.microsoft.com/en-us/graph/api/user-get?view=graph-rest-1.0&tabs=http#http-request)
 
 2. Receive a bearer token by making a POST request to: `https://login.microsoftonline.com/$AADTenantID/oauth2/token`, where `$AADTenantID` is the ID of your Azure Active Directory tenant.
 
-3. Looks up the user in Azure by its UPN, by making a GET request to  `https://graph.microsoft.com/v1.0/users/$($formObject.userPrincipalName)`.  This is done to get the Objectid of the user in Azure.
+3. Looks up the user in Azure by its UPN, by making a GET request to `https://graph.microsoft.com/v1.0/users/$($formObject.UserIdentity)`.  This is done to get the ObjectId of the user in Azure.
 
 4. Resets the password of the user.
